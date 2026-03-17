@@ -1,0 +1,140 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { supabase } from '../lib/supabase.js';
+
+// Traemos TODAS las propiedades activas
+const { data: propiedades } = await supabase
+  .from('propiedades')
+  .select('*')
+  .eq('activa', true)
+  .order('created_at', { ascending: false });
+---
+
+<MainLayout title="Catálogo de Propiedades">
+  <main class="bg-slate-50 min-h-screen py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="mb-12">
+        <h1 class="text-4xl font-black text-slate-900 mb-6">Catálogo Completo</h1>
+        
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4">
+           <input type="text" id="filtro-texto" placeholder="Ubicación, barrio o título..." class="flex-1 px-5 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" />
+           
+           <select id="filtro-operacion" class="px-5 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer">
+             <option value="Todas">Cualquier Operación</option>
+             <option value="Venta">Venta</option>
+             <option value="Alquiler">Alquiler</option>
+             <option value="Alquiler Temporal">Alquiler Temporal</option>
+           </select>
+
+           <select id="filtro-tipo" class="px-5 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer">
+             <option value="Todos">Cualquier Tipo</option>
+             <option value="Casa">Casa</option>
+             <option value="Departamento">Departamento</option>
+             <option value="Terreno">Terreno</option>
+             <option value="Local">Local</option>
+           </select>
+        </div>
+      </div>
+
+      <div id="mensaje-vacio" class="hidden text-center py-20">
+        <div class="text-6xl mb-4">🔍</div>
+        <h3 class="text-2xl font-bold text-slate-900 mb-2">No encontramos propiedades</h3>
+        <p class="text-slate-500 text-lg">Probá usando otras palabras clave o cambiando los filtros.</p>
+        <button onclick="document.getElementById('filtro-texto').value=''; document.getElementById('filtro-operacion').value='Todas'; document.getElementById('filtro-tipo').value='Todos'; document.getElementById('filtro-texto').dispatchEvent(new Event('input'));" class="mt-6 text-blue-600 font-bold hover:underline">
+          Limpiar filtros
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="contenedor-propiedades">
+        {propiedades && propiedades.map((prop) => (
+          <article 
+            class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 overflow-hidden group cursor-pointer tarjeta-propiedad" 
+            data-operacion={prop.operacion} 
+            data-tipo={prop.tipo_propiedad}
+            data-titulo={prop.titulo.toLowerCase()} 
+            data-descripcion={prop.descripcion?.toLowerCase() || ''}
+          >
+            <a href={`/propiedad/${prop.id}`} class="block h-full flex flex-col">
+              <div class="h-64 bg-slate-200 relative overflow-hidden">
+                <span class="absolute top-4 left-4 bg-slate-900 text-white text-xs font-black px-3 py-1.5 rounded-lg uppercase tracking-wider z-10">{prop.operacion}</span>
+                <img src={prop.imagen_principal} alt={prop.titulo} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+              </div>
+              <div class="p-6 flex-1 flex flex-col">
+                <p class="text-2xl font-black text-blue-600 mb-2">{prop.moneda} {prop.precio.toLocaleString('es-AR')}</p>
+                <h4 class="text-lg font-bold text-slate-900 mb-2 line-clamp-1">{prop.titulo}</h4>
+                <p class="text-slate-500 text-sm mb-4 line-clamp-2 flex-1">{prop.descripcion}</p>
+                <div class="flex items-center justify-between text-sm font-medium text-slate-600 border-t border-slate-100 pt-4 mt-auto">
+                  <span title="Ambientes">🛏️ {prop.ambientes}</span>
+                  <span title="Baños">🛁 {prop.banios}</span>
+                  <span title="Metros">📐 {prop.metros_cuadrados}m²</span>
+                </div>
+              </div>
+            </a>
+          </article>
+        ))}
+      </div>
+      
+    </div>
+  </main>
+</MainLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Capturamos todos los elementos
+    const filtroTexto = document.getElementById('filtro-texto');
+    const filtroOperacion = document.getElementById('filtro-operacion');
+    const filtroTipo = document.getElementById('filtro-tipo');
+    const tarjetas = document.querySelectorAll('.tarjeta-propiedad');
+    const mensajeVacio = document.getElementById('mensaje-vacio');
+
+    // 2. La función maestra que filtra
+    const aplicarFiltros = () => {
+      // Tomamos los valores y usamos trim() para borrar espacios accidentales
+      const texto = filtroTexto.value.toLowerCase().trim();
+      const operacion = filtroOperacion.value;
+      const tipo = filtroTipo.value;
+
+      let propiedadesVisibles = 0;
+
+      tarjetas.forEach(tarjeta => {
+        // Leemos la data oculta de la tarjeta
+        const titulo = tarjeta.dataset.titulo || '';
+        const desc = tarjeta.dataset.descripcion || '';
+        const op = tarjeta.dataset.operacion;
+        const tipoProp = tarjeta.dataset.tipo;
+
+        // Comprobamos si coincide con los 3 filtros
+        const coincideTexto = texto === '' || titulo.includes(texto) || desc.includes(texto);
+        const coincideOperacion = operacion === 'Todas' || operacion === op;
+        const coincideTipo = tipo === 'Todos' || tipo === tipoProp;
+
+        // Si cumple TODAS las condiciones, se muestra
+        if (coincideTexto && coincideOperacion && coincideTipo) {
+          tarjeta.style.display = 'block';
+          propiedadesVisibles++;
+        } else {
+          tarjeta.style.display = 'none';
+        }
+      });
+
+      // Si no hay resultados, mostramos el mensaje amigable
+      if (mensajeVacio) {
+        mensajeVacio.style.display = propiedadesVisibles === 0 ? 'block' : 'none';
+      }
+    };
+
+    // 3. MAGIA UX: Filtramos EN TIEMPO REAL al tipear o cambiar un select
+    filtroTexto?.addEventListener('input', aplicarFiltros);
+    filtroOperacion?.addEventListener('change', aplicarFiltros);
+    filtroTipo?.addEventListener('change', aplicarFiltros);
+
+    // 4. Leer si alguien buscó desde la Home
+    const params = new URLSearchParams(window.location.search);
+    if(params.has('texto') || params.has('operacion')) {
+      if(params.has('texto')) filtroTexto.value = params.get('texto');
+      if(params.has('operacion')) filtroOperacion.value = params.get('operacion');
+      aplicarFiltros(); // Forzamos el filtro al cargar la página
+    }
+  });
+</script>

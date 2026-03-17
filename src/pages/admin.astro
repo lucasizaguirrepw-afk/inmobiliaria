@@ -1,0 +1,399 @@
+---
+import '../styles/global.css';
+
+const nombreAgencia = import.meta.env.PUBLIC_AGENCIA_NOMBRE || "Inmobiliaria";
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Panel de Control | {nombreAgencia}</title>
+  </head>
+  <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex">
+
+    <aside class="w-64 bg-slate-900 text-white flex flex-col hidden md:flex">
+      <div class="p-6 border-b border-slate-800">
+        <h2 class="text-xl font-black tracking-tight">Panel Admin</h2>
+        <p class="text-slate-400 text-sm">{nombreAgencia}</p>
+      </div>
+      <nav class="flex-1 p-4 space-y-2">
+        <a href="#publicar" class="block px-4 py-3 bg-blue-600 rounded-lg font-medium shadow-sm">🏠 Propiedades</a>
+        <a href="#mensajes" class="block px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors">✉️ Mensajes</a>
+        <a href="/" target="_blank" class="block px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors mt-8 border-t border-slate-800 pt-4">🌐 Ver sitio web</a>
+      </nav>
+      <div class="p-4 border-t border-slate-800">
+        <button id="btn-logout" class="w-full text-left px-4 py-2 text-red-400 hover:text-red-300 font-medium transition-colors">Cerrar Sesión</button>
+      </div>
+    </aside>
+
+    <main class="flex-1 p-8 md:p-12 overflow-y-auto">
+      
+      <section id="publicar">
+        <header class="flex justify-between items-center mb-10">
+          <div>
+            <h1 class="text-3xl font-bold text-slate-900" id="titulo-seccion-form">Agregar Nueva Propiedad</h1>
+            <p class="text-slate-500 mt-1" id="subtitulo-seccion-form">Completá los datos para publicarla en el catálogo.</p>
+          </div>
+        </header>
+
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 max-w-4xl">
+          <form id="form-propiedad" class="space-y-8">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Título de la publicación</label>
+              <input type="text" id="titulo" required placeholder="Ej: Casa Minimalista con Parque" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Operación</label>
+                <select id="operacion" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer">
+                  <option value="Venta">Venta</option>
+                  <option value="Alquiler">Alquiler</option>
+                  <option value="Alquiler Temporal">Alquiler Temporal</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Tipo de Propiedad</label>
+                <select id="tipo" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer">
+                  <option value="Casa">Casa</option>
+                  <option value="Departamento">Departamento</option>
+                  <option value="Terreno">Terreno</option>
+                  <option value="Local">Local</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Precio</label>
+                <input type="number" id="precio" required placeholder="120000" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Moneda</label>
+                <select id="moneda" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer">
+                  <option value="USD">Dólares (USD)</option>
+                  <option value="ARS">Pesos (ARS)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-6 border-t border-slate-100 pt-6">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Ambientes</label>
+                <input type="number" id="ambientes" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Baños</label>
+                <input type="number" id="banios" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Metros m²</label>
+                <input type="number" id="metros" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" />
+              </div>
+            </div>
+
+            <div class="border-t border-slate-100 pt-6">
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Descripción Completa</label>
+              <textarea id="descripcion" rows="5" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-100 pt-6">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Foto Principal (Portada)</label>
+                <p class="text-xs text-slate-500 mb-2" id="nota-foto-principal"></p>
+                <input type="file" id="foto" accept="image/*" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Galería (Fotos extra)</label>
+                <p class="text-xs text-slate-500 mb-2" id="nota-galeria"></p>
+                <input type="file" id="galeria" accept="image/*" multiple="multiple" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300 cursor-pointer" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-100 pt-6">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Ubicación (Google Maps URL)</label>
+                <input type="text" id="mapa" placeholder="Ej: http://googleusercontent.com/maps.google.com/..." class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all" />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Video Recorrido (YouTube)</label>
+                <input type="url" id="video" placeholder="Ej: https://www.youtube.com/watch?v=..." class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all" />
+              </div>
+            </div>
+
+            <div class="flex justify-end pt-4 gap-4">
+              <button type="button" id="btn-cancelar" class="hidden bg-slate-200 hover:bg-slate-300 transition-colors text-slate-700 font-bold py-4 px-6 rounded-xl shadow-sm text-lg">
+                Cancelar Edición
+              </button>
+              <button type="button" id="btn-guardar" class="bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold py-4 px-10 rounded-xl shadow-md text-lg">
+                Publicar Propiedad
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="mt-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Propiedades Publicadas</h2>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden max-w-4xl">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-50 border-b border-slate-100">
+              <tr>
+                <th class="px-6 py-4 text-sm font-semibold text-slate-700">Propiedad</th>
+                <th class="px-6 py-4 text-sm font-semibold text-slate-700">Precio</th>
+                <th class="px-6 py-4 text-sm font-semibold text-slate-700 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-propiedades"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="mensajes" class="mt-16 border-t border-slate-200 pt-12 max-w-4xl">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Mensajes de Contacto</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="contenedor-mensajes"></div>
+      </section>
+
+    </main>
+  </body>
+</html>
+
+<script>
+  import { supabase } from '../lib/supabase.js';
+
+  console.log("🚀 Arrancando el motor del panel...");
+
+  async function iniciarPanel() {
+    
+    // 1. VERIFICAR SESIÓN
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = '/login';
+      return;
+    }
+
+    document.getElementById('btn-logout')?.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = '/login';
+    });
+
+    // --- VARIABLES DE ESTADO PARA EDICIÓN ---
+    let listaPropiedades = [];
+    let editMode = false;
+    let editId = null;
+    let currentPropData = null;
+
+    // 2. CARGAR TABLA Y ASIGNAR LISTA
+    const tabla = document.getElementById('tabla-propiedades');
+    async function cargarPropiedades() {
+      if (!tabla) return;
+      const { data: lista } = await supabase.from('propiedades').select('*').order('created_at', { ascending: false });
+      listaPropiedades = lista || []; // Guardamos en memoria para no volver a consultar al editar
+      
+      tabla.innerHTML = ''; 
+      listaPropiedades.forEach(p => {
+        tabla.innerHTML += `
+          <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+            <td class="px-6 py-4"><div class="flex items-center gap-3"><img src="${p.imagen_principal}" class="w-12 h-12 rounded-lg object-cover" /><span class="font-medium">${p.titulo}</span></div></td>
+            <td class="px-6 py-4 text-slate-600 font-medium">${p.moneda} ${p.precio.toLocaleString('es-AR')}</td>
+            <td class="px-6 py-4 text-right">
+              <button onclick="window.prepararEdicion('${p.id}')" class="text-blue-500 font-bold hover:text-blue-700 mr-4">Editar</button>
+              <button onclick="window.eliminarPropiedad('${p.id}')" class="text-red-500 font-bold hover:text-red-700">Eliminar</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // 3. FUNCIONES DE EDICIÓN Y ELIMINACIÓN
+    window.eliminarPropiedad = async (id) => {
+      if (!confirm("¿Eliminar esta propiedad?")) return;
+      await supabase.from('propiedades').delete().eq('id', id);
+      cargarPropiedades();
+    };
+
+    window.prepararEdicion = (id) => {
+      const prop = listaPropiedades.find(p => p.id === id);
+      if (!prop) return;
+
+      editMode = true;
+      editId = id;
+      currentPropData = prop;
+
+      // Llenamos el formulario
+      document.getElementById('titulo').value = prop.titulo;
+      document.getElementById('operacion').value = prop.operacion;
+      document.getElementById('tipo').value = prop.tipo_propiedad;
+      document.getElementById('precio').value = prop.precio;
+      document.getElementById('moneda').value = prop.moneda;
+      document.getElementById('ambientes').value = prop.ambientes;
+      document.getElementById('banios').value = prop.banios;
+      document.getElementById('metros').value = prop.metros_cuadrados;
+      document.getElementById('descripcion').value = prop.descripcion;
+      document.getElementById('mapa').value = prop.mapa_url || '';
+      document.getElementById('video').value = prop.video_url || '';
+
+      // Cambios de UI
+      document.getElementById('titulo-seccion-form').innerText = "Editar Propiedad";
+      document.getElementById('subtitulo-seccion-form').innerText = "Modificá los datos y guardá los cambios.";
+      document.getElementById('btn-guardar').innerText = "Actualizar Propiedad";
+      document.getElementById('btn-cancelar').classList.remove('hidden');
+      
+      document.getElementById('nota-foto-principal').innerText = "(Dejá vacío si querés mantener la foto actual)";
+      document.getElementById('nota-galeria').innerText = "(Si subís fotos nuevas, reemplazarán la galería actual)";
+
+      // Scrolleamos arriba de todo
+      document.getElementById('publicar').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    const resetFormulario = () => {
+      document.getElementById('form-propiedad').reset();
+      editMode = false;
+      editId = null;
+      currentPropData = null;
+      
+      document.getElementById('titulo-seccion-form').innerText = "Agregar Nueva Propiedad";
+      document.getElementById('subtitulo-seccion-form').innerText = "Completá los datos para publicarla en el catálogo.";
+      document.getElementById('btn-guardar').innerText = "Publicar Propiedad";
+      document.getElementById('btn-cancelar').classList.add('hidden');
+      document.getElementById('nota-foto-principal').innerText = "";
+      document.getElementById('nota-galeria').innerText = "";
+    };
+
+    document.getElementById('btn-cancelar')?.addEventListener('click', resetFormulario);
+
+    // 4. CARGAR MENSAJES
+    const contenedorMensajes = document.getElementById('contenedor-mensajes');
+    async function cargarMensajes() {
+      if (!contenedorMensajes) return;
+      const { data: mensajes } = await supabase.from('consultas').select('*').order('created_at', { ascending: false });
+      if (!mensajes || mensajes.length === 0) {
+        contenedorMensajes.innerHTML = '<p class="text-slate-500 bg-white p-6 rounded-xl text-center col-span-full">No hay mensajes nuevos.</p>';
+        return;
+      }
+      contenedorMensajes.innerHTML = '';
+      mensajes.forEach(m => {
+        const fecha = new Date(m.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
+        contenedorMensajes.innerHTML += `
+          <div class="bg-white p-6 rounded-2xl shadow-sm border flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start mb-4"><h4 class="font-bold">${m.nombre}</h4><span class="text-xs bg-slate-100 px-2 py-1 rounded-md">${fecha}</span></div>
+              <a href="mailto:${m.email}" class="text-sm text-blue-600 hover:underline block mb-4">${m.email}</a>
+              <p class="text-slate-600 text-sm mb-6 border-l-2 border-blue-100 pl-3">${m.mensaje}</p>
+            </div>
+            <div class="flex justify-end pt-4 border-t border-slate-50"><button onclick="window.eliminarMensaje('${m.id}')" class="text-red-500 font-bold">Borrar</button></div>
+          </div>
+        `;
+      });
+    }
+
+    window.eliminarMensaje = async (id) => {
+      if (!confirm("¿Borrar este mensaje?")) return;
+      await supabase.from('consultas').delete().eq('id', id);
+      cargarMensajes();
+    };
+
+    cargarPropiedades();
+    cargarMensajes();
+
+    // 5. GUARDAR O ACTUALIZAR PROPIEDAD
+    const btnGuardar = document.getElementById('btn-guardar');
+
+    btnGuardar?.addEventListener('click', async () => {
+      const titulo = document.getElementById('titulo').value;
+      const precio = document.getElementById('precio').value;
+      const archivoFoto = document.getElementById('foto').files[0];
+      const archivosGaleria = document.getElementById('galeria').files;
+
+      if (!titulo || !precio) return alert("Completá Título y Precio.");
+      if (!editMode && !archivoFoto) return alert("Tenés que subir una Foto Principal para publicar.");
+
+      const textoOriginal = btnGuardar.innerText;
+      btnGuardar.innerText = "Guardando... (puede demorar)";
+      btnGuardar.disabled = true;
+
+      try {
+        // A) Definir las URLs iniciales (si estamos editando, conservamos las viejas por defecto)
+        let urlPrincipal = editMode ? currentPropData.imagen_principal : "";
+        let urlsGaleria = editMode ? currentPropData.galeria : null;
+
+        // B) Si subió una foto principal nueva, la reemplazamos
+        if (archivoFoto) {
+          const extPrincipal = archivoFoto.name.split('.').pop();
+          const nombrePrincipal = `principal-${Date.now()}-${Math.floor(Math.random()*1000)}.${extPrincipal}`;
+          const { error: err1 } = await supabase.storage.from('imagenes').upload(nombrePrincipal, archivoFoto);
+          if (err1) throw err1;
+          urlPrincipal = supabase.storage.from('imagenes').getPublicUrl(nombrePrincipal).data.publicUrl;
+          
+          // Si no hay galería armada, metemos la principal como primer foto de la galería
+          if(!urlsGaleria) urlsGaleria = [urlPrincipal]; 
+        }
+
+        // C) Si subió fotos de galería nuevas, sobreescribimos la galería entera
+        if (archivosGaleria.length > 0) {
+          urlsGaleria = [urlPrincipal]; // Reseteamos empezando con la foto principal
+          for (let i = 0; i < archivosGaleria.length; i++) {
+              const extGal = archivosGaleria[i].name.split('.').pop();
+              const nombreGal = `gal-${Date.now()}-${i}.${extGal}`;
+              const { error: err2 } = await supabase.storage.from('imagenes').upload(nombreGal, archivosGaleria[i]);
+              if (!err2) {
+                 const urlGal = supabase.storage.from('imagenes').getPublicUrl(nombreGal).data.publicUrl;
+                 urlsGaleria.push(urlGal);
+              }
+          }
+        }
+
+        // D) Formatear link de YouTube
+        let videoRaw = document.getElementById('video').value;
+        let videoEmbed = null;
+        if (videoRaw) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = videoRaw.match(regExp);
+            videoEmbed = (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : videoRaw;
+        }
+
+        // E) Objeto final para guardar
+        const datosPropiedad = {
+          titulo,
+          operacion: document.getElementById('operacion').value,
+          tipo_propiedad: document.getElementById('tipo').value,
+          precio: Number(precio),
+          moneda: document.getElementById('moneda').value,
+          ambientes: Number(document.getElementById('ambientes').value) || 0,
+          banios: Number(document.getElementById('banios').value) || 0,
+          metros_cuadrados: Number(document.getElementById('metros').value) || 0,
+          descripcion: document.getElementById('descripcion').value,
+          imagen_principal: urlPrincipal,
+          galeria: (urlsGaleria && urlsGaleria.length > 1) ? urlsGaleria : null,
+          mapa_url: document.getElementById('mapa').value || null,
+          video_url: videoEmbed,
+          activa: true,
+          destacada: false
+        };
+
+        // F) UPDATE O INSERT según el modo
+        if (editMode) {
+          const { error } = await supabase.from('propiedades').update(datosPropiedad).eq('id', editId);
+          if (error) throw error;
+          alert("¡Propiedad actualizada con éxito!");
+        } else {
+          const { error } = await supabase.from('propiedades').insert([datosPropiedad]);
+          if (error) throw error;
+          alert("¡Propiedad publicada con éxito!");
+        }
+
+        resetFormulario();
+        cargarPropiedades(); 
+
+      } catch (err) {
+        alert("Error: " + err.message);
+      } finally {
+        btnGuardar.innerText = editMode ? "Actualizar Propiedad" : "Publicar Propiedad";
+        btnGuardar.disabled = false;
+      }
+    });
+  }
+
+  iniciarPanel();
+</script>

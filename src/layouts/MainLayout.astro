@@ -1,0 +1,56 @@
+---
+import '../styles/global.css';
+const { title } = Astro.props;
+const nombreAgencia = import.meta.env.PUBLIC_AGENCIA_NOMBRE || "Inmobiliaria";
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title} | {nombreAgencia}</title>
+  </head>
+  <body class="bg-white text-slate-800 font-sans antialiased flex flex-col min-h-screen">
+    
+    <header class="bg-white border-b border-slate-100 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
+        <a href="/" class="text-2xl font-black text-slate-900 hover:text-blue-600 transition-colors">{nombreAgencia}</a>
+        
+        <nav class="hidden md:flex space-x-8 font-medium text-slate-600">
+            <a href="/propiedades" class="hover:text-blue-600 transition-colors">Propiedades</a>
+            <a href="/nosotros" class="hover:text-blue-600 transition-colors">Nosotros</a>
+            <a href="/contacto" class="hover:text-blue-600 transition-colors">Contacto</a>
+        </nav>
+
+        <a href="/login" class="text-sm font-bold bg-slate-100 px-4 py-2 rounded-lg hover:bg-slate-200 transition-all text-slate-600">Admin</a>
+      </div>
+    </header>
+
+    <main class="flex-grow">
+      <slot />
+    </main>
+
+    <footer class="bg-slate-900 text-white py-12">
+      <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div>
+          <h3 class="text-xl font-black mb-4">{nombreAgencia}</h3>
+          <p class="text-slate-400">Tu aliado de confianza en el mercado inmobiliario.</p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <h4 class="font-bold mb-2">Navegación</h4>
+          <a href="/propiedades" class="hover:text-blue-600 transition-colors">Propiedades</a>
+          <a href="/nosotros" class="hover:text-blue-600 transition-colors">Nosotros</a>
+          <a href="/contacto" class="hover:text-blue-600 transition-colors">Contacto</a>
+        </div>
+        <div>
+          <h4 class="font-bold mb-2">Contacto</h4>
+          <p class="text-slate-400">📍 Av. Libertador 1234, CABA</p>
+          <p class="text-slate-400">📞 54 9 11 2345 6789</p>
+        </div>
+      </div>
+      <div class="max-w-7xl mx-auto px-4 mt-12 pt-8 border-t border-slate-800 text-center text-slate-500 text-sm">
+        © 2026 {nombreAgencia}. Todos los derechos reservados.
+      </div>
+    </footer>
+  </body>
+</html>

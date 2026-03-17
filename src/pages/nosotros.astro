@@ -1,0 +1,38 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+const nombreAgencia = import.meta.env.PUBLIC_AGENCIA_NOMBRE || "Inmobiliaria";
+---
+
+<MainLayout title="Nosotros">
+  <section class="py-20 bg-slate-50">
+    <div class="max-w-5xl mx-auto px-4 text-center">
+      <h1 class="text-5xl font-black text-slate-900 mb-6 tracking-tight">
+        Pasión por encontrar <br/> 
+        <span class="text-blue-600">tu lugar en el mundo.</span>
+      </h1>
+      <p class="text-xl text-slate-500 leading-relaxed max-w-3xl mx-auto">
+        Desde hace más de 10 años, en {nombreAgencia} nos dedicamos a conectar personas con hogares. No solo vendemos metros cuadrados, construimos vínculos basados en la transparencia y el profesionalismo.
+      </p>
+    </div>
+  </section>
+
+  <section class="py-20">
+    <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-12">
+      <div class="space-y-4">
+        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-2xl">🤝</div>
+        <h3 class="text-xl font-bold">Transparencia</h3>
+        <p class="text-slate-500">Cada operación es clara de principio a fin. Sin sorpresas, con toda la documentación a disposición.</p>
+      </div>
+      <div class="space-y-4">
+        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-2xl">🚀</div>
+        <h3 class="text-xl font-bold">Innovación</h3>
+        <p class="text-slate-500">Usamos las últimas tecnologías para que tu propiedad se destaque y se venda más rápido.</p>
+      </div>
+      <div class="space-y-4">
+        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-2xl">🏠</div>
+        <h3 class="text-xl font-bold">Compromiso</h3>
+        <p class="text-slate-500">Te acompañamos en cada paso, desde la primera visita hasta la firma de la escritura.</p>
+      </div>
+    </div>
+  </section>
+</MainLayout>
