@@ -161,8 +161,65 @@ const nombreAgencia = import.meta.env.PUBLIC_AGENCIA_NOMBRE || "Inmobiliaria";
 
 <script>
   import { supabase } from '../lib/supabase.js';
+  import { optimizar } from '../lib/imagenes.js';
 
   console.log("🚀 Arrancando el motor del panel...");
+
+  // Achica la foto en el navegador ANTES de subirla: máximo 1920px de lado y
+  // calidad JPEG 0.8. Una foto de celular de 5-8 MB queda en ~300-500 KB.
+  // Si el navegador no puede leer el formato (ej. HEIC en Chrome), sube el original.
+  async function comprimirImagen(archivo, maxLado = 1920, calidad = 0.8) {
+    try {
+      const bitmap = await createImageBitmap(archivo, { imageOrientation: 'from-image' });
+      const escala = Math.min(1, maxLado / Math.max(bitmap.width, bitmap.height));
+      const ancho = Math.round(bitmap.width * escala);
+      const alto = Math.round(bitmap.height * escala);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = ancho;
+      canvas.height = alto;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff'; // fondo blanco por si es un PNG con transparencia
+      ctx.fillRect(0, 0, ancho, alto);
+      ctx.drawImage(bitmap, 0, 0, ancho, alto);
+      bitmap.close?.();
+
+      const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', calidad));
+      if (!blob || blob.size >= archivo.size) return archivo; // si no ganamos nada, va el original
+      const nombre = archivo.name.replace(/\.[^.]+$/, '') + '.jpg';
+      return new File([blob], nombre, { type: 'image/jpeg' });
+    } catch (e) {
+      console.warn('No se pudo comprimir, se sube el original:', e);
+      return archivo;
+    }
+  }
+
+  // Subida de imágenes a Cloudinary (reemplaza a Supabase Storage).
+  // Requiere las variables PUBLIC_CLOUDINARY_CLOUD_NAME y PUBLIC_CLOUDINARY_UPLOAD_PRESET.
+  async function subirImagenCloudinary(archivo) {
+    const cloudName = import.meta.env.PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || !uploadPreset) {
+      throw new Error("Falta configurar Cloudinary (PUBLIC_CLOUDINARY_CLOUD_NAME / PUBLIC_CLOUDINARY_UPLOAD_PRESET).");
+    }
+
+    const archivoFinal = await comprimirImagen(archivo);
+
+    const formData = new FormData();
+    formData.append('file', archivoFinal);
+    formData.append('upload_preset', uploadPreset);
+
+    const respuesta = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await respuesta.json();
+    if (!respuesta.ok) throw new Error(data.error?.message || "Error subiendo la imagen a Cloudinary.");
+
+    return data.secure_url;
+  }
 
   async function iniciarPanel() {
     
@@ -195,7 +252,7 @@ const nombreAgencia = import.meta.env.PUBLIC_AGENCIA_NOMBRE || "Inmobiliaria";
       listaPropiedades.forEach(p => {
         tabla.innerHTML += `
           <tr class="border-b border-slate-50 hover:bg-slate-50/50">
-            <td class="px-6 py-4"><div class="flex items-center gap-3"><img src="${p.imagen_principal}" class="w-12 h-12 rounded-lg object-cover" /><span class="font-medium">${p.titulo}</span></div></td>
+            <td class="px-6 py-4"><div class="flex items-center gap-3">${p.imagen_principal ? `<img src="${optimizar(p.imagen_principal, 120)}" class="w-12 h-12 rounded-lg object-cover" />` : `<div class="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center" title="Sin foto">📷</div>`}<span class="font-medium">${p.titulo}</span></div></td>
             <td class="px-6 py-4 text-slate-600 font-medium">${p.moneda} ${p.precio.toLocaleString('es-AR')}</td>
             <td class="px-6 py-4 text-right">
               <button onclick="window.prepararEdicion('${p.id}')" class="text-blue-500 font-bold hover:text-blue-700 mr-4">Editar</button>
@@ -308,6 +365,7 @@ const nombreAgencia = import.meta.env.PUBLIC_AGENCIA_NOMBRE || "Inmobiliaria";
 
       if (!titulo || !precio) return alert("Completá Título y Precio.");
       if (!editMode && !archivoFoto) return alert("Tenés que subir una Foto Principal para publicar.");
+      if (editMode && !currentPropData?.imagen_principal && !archivoFoto) return alert("Esta propiedad todavía no tiene foto: subí la Foto Principal (y si querés, la galería).");
 
       const textoOriginal = btnGuardar.innerText;
       btnGuardar.innerText = "Guardando... (puede demorar)";
@@ -318,13 +376,9 @@ const nombreAgencia = import.meta.env.PUBLIC_AGENCIA_NOMBRE || "Inmobiliaria";
         let urlPrincipal = editMode ? currentPropData.imagen_principal : "";
         let urlsGaleria = editMode ? currentPropData.galeria : null;
 
-        // B) Si subió una foto principal nueva, la reemplazamos
+        // B) Si subió una foto principal nueva, la reemplazamos (subida a Cloudinary)
         if (archivoFoto) {
-          const extPrincipal = archivoFoto.name.split('.').pop();
-          const nombrePrincipal = `principal-${Date.now()}-${Math.floor(Math.random()*1000)}.${extPrincipal}`;
-          const { error: err1 } = await supabase.storage.from('imagenes').upload(nombrePrincipal, archivoFoto);
-          if (err1) throw err1;
-          urlPrincipal = supabase.storage.from('imagenes').getPublicUrl(nombrePrincipal).data.publicUrl;
+          urlPrincipal = await subirImagenCloudinary(archivoFoto);
           
           // Si no hay galería armada, metemos la principal como primer foto de la galería
           if(!urlsGaleria) urlsGaleria = [urlPrincipal]; 
@@ -334,13 +388,8 @@ const nombreAgencia = import.meta.env.PUBLIC_AGENCIA_NOMBRE || "Inmobiliaria";
         if (archivosGaleria.length > 0) {
           urlsGaleria = [urlPrincipal]; // Reseteamos empezando con la foto principal
           for (let i = 0; i < archivosGaleria.length; i++) {
-              const extGal = archivosGaleria[i].name.split('.').pop();
-              const nombreGal = `gal-${Date.now()}-${i}.${extGal}`;
-              const { error: err2 } = await supabase.storage.from('imagenes').upload(nombreGal, archivosGaleria[i]);
-              if (!err2) {
-                 const urlGal = supabase.storage.from('imagenes').getPublicUrl(nombreGal).data.publicUrl;
-                 urlsGaleria.push(urlGal);
-              }
+              const urlGal = await subirImagenCloudinary(archivosGaleria[i]);
+              if (urlGal) urlsGaleria.push(urlGal);
           }
         }
 

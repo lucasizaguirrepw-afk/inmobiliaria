@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import { supabase } from '../../lib/supabase.js';
+import { optimizar } from '../../lib/imagenes.js';
 
 export async function getStaticPaths() {
   const { data: propiedades } = await supabase.from('propiedades').select('*');
@@ -16,18 +17,9 @@ const whatsapp = import.meta.env.PUBLIC_WHATSAPP || "5491123456789";
 const mensajeWsp = `¡Hola! Me interesa la propiedad "${prop.titulo}" que vi en la web. ¿Me darían más información?`;
 const linkWsp = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensajeWsp)}`;
 
-// --- DATOS SIMULADOS PARA EL DISEÑO ---
-// Si la propiedad no tiene una galería en la base de datos, usamos estas de relleno para que veas el diseño
-const galeria = prop.galeria || [
-  prop.imagen_principal,
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-  "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-  "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
-];
-
-// Un video genérico de recorrido de una casa si no hay uno cargado
-const videoYoutube = prop.video_url || "https://www.youtube.com/embed/y9j-BL5ocW8?si=ZqMtzO72xUfKHKT_";
+// Fotos reales: la galería si existe, si no la portada. Sin fotos de relleno.
+const galeria = ((Array.isArray(prop.galeria) && prop.galeria.length) ? prop.galeria : [prop.imagen_principal]).filter(Boolean);
+const videoYoutube = prop.video_url || null;
 ---
 
 <MainLayout title={prop.titulo}>
@@ -58,20 +50,26 @@ const videoYoutube = prop.video_url || "https://www.youtube.com/embed/y9j-BL5ocW
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 h-[400px] md:h-[500px] rounded-3xl overflow-hidden mb-12 group cursor-pointer">
       <div class="md:col-span-2 h-full relative overflow-hidden">
-        <img src={galeria[0]} class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+        {galeria[0]
+          ? <img src={optimizar(galeria[0], 1200)} data-full={optimizar(galeria[0], 1920)} class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+          : <div class="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400 text-lg font-semibold">📷 Fotos próximamente</div>}
       </div>
       <div class="hidden md:grid grid-rows-2 gap-3 col-span-2 h-full">
         <div class="grid grid-cols-2 gap-3 h-full">
-          <div class="relative overflow-hidden h-full"><img src={galeria[1]} class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" /></div>
-          <div class="relative overflow-hidden h-full"><img src={galeria[2]} class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" /></div>
+          <div class="relative overflow-hidden h-full">{galeria[1] ? <img src={optimizar(galeria[1], 600)} data-full={optimizar(galeria[1], 1920)} loading="lazy" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" /> : <div class="w-full h-full bg-slate-100"></div>}</div>
+          <div class="relative overflow-hidden h-full">{galeria[2] ? <img src={optimizar(galeria[2], 600)} data-full={optimizar(galeria[2], 1920)} loading="lazy" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" /> : <div class="w-full h-full bg-slate-100"></div>}</div>
         </div>
         <div class="grid grid-cols-2 gap-3 h-full">
-          <div class="relative overflow-hidden h-full"><img src={galeria[3]} class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" /></div>
+          <div class="relative overflow-hidden h-full">{galeria[3] ? <img src={optimizar(galeria[3], 600)} data-full={optimizar(galeria[3], 1920)} loading="lazy" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" /> : <div class="w-full h-full bg-slate-100"></div>}</div>
           <div class="relative overflow-hidden h-full">
-            <img src={galeria[4]} class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-            <div class="absolute inset-0 bg-slate-900/40 hover:bg-slate-900/20 transition-colors flex items-center justify-center">
-              <span class="text-white font-bold text-lg drop-shadow-md">Ver Galería</span>
-            </div>
+            {galeria[4] ? (
+              <>
+                <img src={optimizar(galeria[4], 600)} data-full={optimizar(galeria[4], 1920)} loading="lazy" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                <div class="absolute inset-0 bg-slate-900/40 hover:bg-slate-900/20 transition-colors flex items-center justify-center">
+                  <span class="text-white font-bold text-lg drop-shadow-md">Ver Galería</span>
+                </div>
+              </>
+            ) : <div class="w-full h-full bg-slate-100"></div>}
           </div>
         </div>
       </div>
@@ -103,6 +101,7 @@ const videoYoutube = prop.video_url || "https://www.youtube.com/embed/y9j-BL5ocW
           </div>
         </section>
 
+        {videoYoutube && (
         <section class="pt-8 border-t border-slate-100">
           <h2 class="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2">
             <span>🎥</span> Recorrido Virtual
@@ -118,6 +117,7 @@ const videoYoutube = prop.video_url || "https://www.youtube.com/embed/y9j-BL5ocW
             </iframe>
           </div>
         </section>
+        )}
 
         {prop.mapa_url && (
           <section class="pt-8 border-t border-slate-100">
@@ -229,7 +229,7 @@ const videoYoutube = prop.video_url || "https://www.youtube.com/embed/y9j-BL5ocW
 
     // 4. Función para cambiar la foto
     const actualizarImagen = () => {
-      imgLightbox.src = imagenesGaleria[currentIndex].src;
+      imgLightbox.src = imagenesGaleria[currentIndex].dataset.full || imagenesGaleria[currentIndex].src;
       contador.innerText = `${currentIndex + 1} / ${imagenesGaleria.length}`;
     };
 

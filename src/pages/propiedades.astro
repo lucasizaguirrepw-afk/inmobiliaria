@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import { supabase } from '../lib/supabase.js';
+import { optimizar } from '../lib/imagenes.js';
 
 // Traemos TODAS las propiedades activas
 const { data: propiedades } = await supabase
@@ -58,7 +59,9 @@ const { data: propiedades } = await supabase
             <a href={`/propiedad/${prop.id}`} class="block h-full flex flex-col">
               <div class="h-64 bg-slate-200 relative overflow-hidden">
                 <span class="absolute top-4 left-4 bg-slate-900 text-white text-xs font-black px-3 py-1.5 rounded-lg uppercase tracking-wider z-10">{prop.operacion}</span>
-                <img src={prop.imagen_principal} alt={prop.titulo} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                {prop.imagen_principal
+                  ? <img src={optimizar(prop.imagen_principal, 700)} loading="lazy" alt={prop.titulo} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  : <div class="w-full h-full flex items-center justify-center text-slate-400 font-semibold">📷 Fotos próximamente</div>}
               </div>
               <div class="p-6 flex-1 flex flex-col">
                 <p class="text-2xl font-black text-blue-600 mb-2">{prop.moneda} {prop.precio.toLocaleString('es-AR')}</p>
