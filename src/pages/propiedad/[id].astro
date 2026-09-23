@@ -1,17 +1,26 @@
 ---
+export const prerender = false; // SSR: una propiedad nueva o editada se ve sin rebuild.
+
 import MainLayout from '../../layouts/MainLayout.astro';
 import { supabase } from '../../lib/supabase.js';
 import { optimizar } from '../../lib/imagenes.js';
 
-export async function getStaticPaths() {
-  const { data: propiedades } = await supabase.from('propiedades').select('*');
-  return propiedades.map((prop) => ({
-    params: { id: prop.id },
-    props: { prop },
-  }));
+const { id } = Astro.params;
+
+const { data: prop, error } = await supabase
+  .from('propiedades')
+  .select('*')
+  .eq('id', id)
+  .single();
+
+// Si no existe (borrada, desactivada, id inválido) mandamos al catálogo en vez de romper la página.
+if (error || !prop) {
+  return Astro.redirect('/propiedades');
 }
 
-const { prop } = Astro.props;
+// Caché en el CDN de Netlify: la página se regenera como máximo cada 2 minutos,
+// así un cambio del admin se ve enseguida sin ejecutar la función en cada visita.
+Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, durable, s-maxage=120, stale-while-revalidate=600');
 
 const whatsapp = import.meta.env.PUBLIC_WHATSAPP || "5491123456789";
 const mensajeWsp = `¡Hola! Me interesa la propiedad "${prop.titulo}" que vi en la web. ¿Me darían más información?`;

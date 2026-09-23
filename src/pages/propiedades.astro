@@ -1,4 +1,6 @@
 ---
+export const prerender = false; // SSR: lee Supabase en cada visita, sin rebuild.
+
 import MainLayout from '../layouts/MainLayout.astro';
 import { supabase } from '../lib/supabase.js';
 import { optimizar } from '../lib/imagenes.js';
@@ -9,6 +11,10 @@ const { data: propiedades } = await supabase
   .select('*')
   .eq('activa', true)
   .order('created_at', { ascending: false });
+
+// Caché en el CDN de Netlify: la página se regenera como máximo cada 2 minutos,
+// así un cambio del admin se ve enseguida sin ejecutar la función en cada visita.
+Astro.response.headers.set('Netlify-CDN-Cache-Control', 'public, durable, s-maxage=120, stale-while-revalidate=600');
 ---
 
 <MainLayout title="Catálogo de Propiedades">
